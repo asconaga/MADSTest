@@ -36,8 +36,7 @@ export default function UserListScreen({ navigation }) {
             if (selectedUser) {
                 await updateUser({ userId: selectedUser.userId, name: editedName });
             } else {
-                const newId = Date.now();
-                await createUser({ userId: newId, name: editedName });
+                await createUser({ userId: 0, name: editedName });
             }
             closeModal();
             loadUsers();
@@ -74,7 +73,7 @@ export default function UserListScreen({ navigation }) {
                 }}
                 activeOpacity={0.8}
             >
-                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text style={styles.cardTitle}>{item.name} ({item.userId})</Text>
             </TouchableOpacity>
         );
     }

@@ -1,3 +1,5 @@
+import { Picker } from '@react-native-picker/picker';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import {
   Button,
@@ -9,10 +11,14 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { getAllStatuses } from './services/statusDB';
 import { createSurvey, deleteSurvey, getAllSurveys, updateSurvey } from './services/surveyDB';
+import { getAllUsers } from './services/userDB';
 
-export default function SurveyListScreen() {
+export default function SurveyListScreen({ navigation }) {
   const [surveys, setSurveys] = useState([]);
+  const [statusList, setStatusList] = useState([]);
+  const [userList, setUserList] = useState([]);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [editedName, setEditedName] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
@@ -20,8 +26,23 @@ export default function SurveyListScreen() {
   const [editedStatus, setEditedStatus] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
 
+  // Load data on mount
+  useEffect(() => {
+    loadStatuses();
+  }, []);
+
+  // Refresh data each time screen gains focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadSurveys();
+      loadUsers();
+    }, [])
+  );
+
   useEffect(() => {
     loadSurveys();
+    loadStatuses();
+    loadUsers();
   }, []);
 
   async function loadSurveys() {
@@ -30,6 +51,24 @@ export default function SurveyListScreen() {
       setSurveys(all);
     } catch (err) {
       console.error('Error loading surveys', err);
+    }
+  }
+
+  async function loadStatuses() {
+    try {
+      const statuses = await getAllStatuses();
+      setStatusList(statuses);
+    } catch (err) {
+      console.error('Error loading statuses', err);
+    }
+  }
+
+  async function loadUsers() {
+    try {
+      const users = await getAllUsers();
+      setUserList(users);
+    } catch (err) {
+      console.error('Error loading users', err);
     }
   }
 
@@ -55,7 +94,10 @@ export default function SurveyListScreen() {
   }
 
   async function onSave() {
-    if (!editedName.trim() || !editedCreatedBy.trim() || !editedStatus.trim()) return;
+    if (!editedName.trim() || !editedCreatedBy || !editedStatus) {
+      console.log("Not save");
+      return;
+    }
     try {
       const surveyObj = {
         surveyId: selectedSurvey ? selectedSurvey.surveyId : 0,
@@ -89,15 +131,20 @@ export default function SurveyListScreen() {
   }
 
   function renderSurvey({ item }) {
+    const statusObj = statusList.find(s => s.statusId === item.status);
+    const statusText = statusObj ? statusObj.name : item.status;
+    const userObj = userList.find(u => u.userId === item.createdBy);
+    const userText = userObj ? userObj.name : item.createdBy;
+
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => openModal(item)}
         activeOpacity={0.8}
       >
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        <Text style={styles.cardSubtitle}>ID: {item.surveyId}</Text>
-        <Text style={styles.cardSubtitle}>Status: {item.status}</Text>
+        <Text style={styles.cardTitle}>{item.name} ({item.surveyId})</Text>
+        <Text style={styles.cardSubtitle}>Status: {statusText}</Text>
+        <Text style={styles.cardSubtitle}>Created By: {userText}</Text>
       </TouchableOpacity>
     );
   }
@@ -148,20 +195,40 @@ export default function SurveyListScreen() {
               placeholder="Description"
               multiline
             />
-            <TextInput
-              style={styles.modalInput}
-              value={editedCreatedBy}
-              onChangeText={setEditedCreatedBy}
-              placeholder="Created By (User ID)"
-              keyboardType="numeric"
-            />
-            <TextInput
-              style={styles.modalInput}
-              value={editedStatus}
-              onChangeText={setEditedStatus}
-              placeholder="Status ID"
-              keyboardType="numeric"
-            />
+            {/* User Picker */}
+            <View style={styles.pickerContainer}>
+              <Text style={styles.pickerLabel}>Created By:</Text>
+              <Picker
+                selectedValue={editedCreatedBy}
+                onValueChange={value => setEditedCreatedBy(value)}
+              >
+                <Picker.Item label="Select user..." value="" />
+                {userList.map(u => (
+                  <Picker.Item
+                    key={u.userId}
+                    label={u.name}
+                    value={u.userId.toString()}
+                  />
+                ))}
+              </Picker>
+            </View>
+            {/* Status Picker */}
+            <View style={styles.pickerContainer}>
+              <Text style={styles.pickerLabel}>Status:</Text>
+              <Picker
+                selectedValue={editedStatus}
+                onValueChange={value => setEditedStatus(value)}
+              >
+                <Picker.Item label="Select status..." value="" />
+                {statusList.map(s => (
+                  <Picker.Item
+                    key={s.statusId}
+                    label={s.name}
+                    value={s.statusId.toString()}
+                  />
+                ))}
+              </Picker>
+            </View>
             <View style={styles.modalButtons}>
               <Button title="Cancel" onPress={closeModal} />
               {selectedSurvey && (
@@ -236,6 +303,18 @@ const styles = StyleSheet.create({
   textarea: {
     height: 80,
     textAlignVertical: 'top'
+  },
+  pickerContainer: {
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    overflow: 'hidden'
+  },
+  pickerLabel: {
+    padding: 8,
+    fontSize: 14,
+    fontWeight: '500'
   },
   modalButtons: {
     flexDirection: 'row',
