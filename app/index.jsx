@@ -1,19 +1,13 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 export default function Index() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push('/optionsScreen')}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.buttonText}>Options</Text>
-      </TouchableOpacity>
+
     </View>
   );
 }
