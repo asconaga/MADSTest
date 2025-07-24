@@ -1,7 +1,8 @@
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   Button,
   FlatList,
   Modal,
@@ -26,6 +27,9 @@ export default function SurveyListScreen({ navigation }) {
   const [editedStatus, setEditedStatus] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
 
+
+  // Animated value for shake
+  const shakeAnim = useRef(new Animated.Value(0)).current;
   // Load data on mount
   useEffect(() => {
     loadStatuses();
@@ -86,6 +90,7 @@ export default function SurveyListScreen({ navigation }) {
       setEditedStatus('');
     }
     setModalVisible(true);
+    shakeAnim.setValue(0);
   }
 
   function closeModal() {
@@ -93,9 +98,33 @@ export default function SurveyListScreen({ navigation }) {
     setSelectedSurvey(null);
   }
 
+
+  /**
+   * triggerShake
+   *
+   * Performs a quick “shake” animation on the modal container to indicate invalid input.
+   * Uses Animated.sequence to chain four horizontal translations:
+   *   1. Move to +10px (right) over 50ms
+   *   2. Move to –10px (left) over 50ms
+   *   3. Move to +10px (right) over 50ms
+   *   4. Return to 0px (center) over 50ms
+   *
+   * This creates a left‑right wobble effect. The useNativeDriver flag is enabled
+   * to offload the animation to the native thread for smoother performance.
+   */
+
+  function triggerShake() {
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true })
+    ]).start();
+  }
+
   async function onSave() {
     if (!editedName.trim() || !editedCreatedBy || !editedStatus) {
-      console.log("Not save");
+      triggerShake();
       return;
     }
     try {
@@ -116,6 +145,7 @@ export default function SurveyListScreen({ navigation }) {
       loadSurveys();
     } catch (err) {
       console.error('Error saving survey', err);
+      triggerShake();
     }
   }
 
@@ -161,6 +191,16 @@ export default function SurveyListScreen({ navigation }) {
     );
   }
 
+  /**
+ * Animated style object that binds the horizontal translation
+ * (translateX) of the modal container to the `shakeAnim` value.
+ * 
+ * You can spread this into an Animated.View’s style prop to
+ * automatically move the view left/right as `shakeAnim` changes.
+ */
+
+  const modalTranslate = { transform: [{ translateX: shakeAnim }] };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -178,7 +218,7 @@ export default function SurveyListScreen({ navigation }) {
         onRequestClose={closeModal}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <Animated.View style={[styles.modalContent, modalTranslate]}>
             <Text style={styles.modalTitle}>
               {selectedSurvey ? 'Edit Survey' : 'New Survey'}
             </Text>
@@ -195,7 +235,6 @@ export default function SurveyListScreen({ navigation }) {
               placeholder="Description"
               multiline
             />
-            {/* User Picker */}
             <View style={styles.pickerContainer}>
               <Text style={styles.pickerLabel}>Created By:</Text>
               <Picker
@@ -212,7 +251,6 @@ export default function SurveyListScreen({ navigation }) {
                 ))}
               </Picker>
             </View>
-            {/* Status Picker */}
             <View style={styles.pickerContainer}>
               <Text style={styles.pickerLabel}>Status:</Text>
               <Picker
@@ -236,7 +274,7 @@ export default function SurveyListScreen({ navigation }) {
               )}
               <Button title={selectedSurvey ? 'Save' : 'Add'} onPress={onSave} />
             </View>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
     </View>
@@ -255,7 +293,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 12,
+    padding: 8,
     marginVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -264,7 +302,7 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600'
   },
   cardSubtitle: {
