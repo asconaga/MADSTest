@@ -40,6 +40,7 @@ export default function RootLayout() {
       />
       <Stack.Screen name="optionsScreen" options={{ title: 'Options' }} />
       <Stack.Screen name="userListScreen" options={{ title: 'Users' }} />
+      <Stack.Screen name="statusListScreen" options={{ title: 'Status' }} />
     </Stack>
   );
 }
