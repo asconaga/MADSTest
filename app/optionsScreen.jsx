@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 const OPTIONS = [
     { id: '1', title: 'User Options', route: 'userListScreen' },
     { id: '2', title: 'Status Options', route: 'statusListScreen' },
-    { id: '3', title: 'Settings', route: 'Settings' }
+    { id: '3', title: 'Photos', route: 'photoListScreen' }
 ];
 
 export default function OptionsForm({ navigation }) {

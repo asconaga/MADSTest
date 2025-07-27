@@ -1,4 +1,3 @@
-import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { SelectList } from 'react-native-dropdown-select-list';
 import { getAllStatuses } from './services/statusDB';
 import { createSurvey, deleteSurvey, getAllSurveys, updateSurvey } from './services/surveyDB';
 import { getAllUsers } from './services/userDB';
@@ -200,6 +200,15 @@ export default function SurveyListScreen({ navigation }) {
  */
 
   const modalTranslate = { transform: [{ translateX: shakeAnim }] };
+  const userOptions = userList.map(u => ({
+    key: u.userId.toString(),
+    value: u.name,
+  }));
+
+  const statusOptions = statusList.map(s => ({
+    key: s.statusId.toString(),
+    value: s.name,
+  }));
 
   return (
     <View style={styles.container}>
@@ -237,35 +246,25 @@ export default function SurveyListScreen({ navigation }) {
             />
             <View style={styles.pickerContainer}>
               <Text style={styles.pickerLabel}>Created By:</Text>
-              <Picker
-                selectedValue={editedCreatedBy}
-                onValueChange={value => setEditedCreatedBy(value)}
-              >
-                <Picker.Item label="Select user..." value="" />
-                {userList.map(u => (
-                  <Picker.Item
-                    key={u.userId}
-                    label={u.name}
-                    value={u.userId.toString()}
-                  />
-                ))}
-              </Picker>
+              <SelectList
+                setSelected={setEditedCreatedBy}
+                data={userOptions}
+                save="key"
+                search={false}
+                placeholder="Select user..."
+                defaultOption={editedCreatedBy ? userOptions.find(u => u.key === editedCreatedBy) : null}
+              />
             </View>
             <View style={styles.pickerContainer}>
               <Text style={styles.pickerLabel}>Status:</Text>
-              <Picker
-                selectedValue={editedStatus}
-                onValueChange={value => setEditedStatus(value)}
-              >
-                <Picker.Item label="Select status..." value="" />
-                {statusList.map(s => (
-                  <Picker.Item
-                    key={s.statusId}
-                    label={s.name}
-                    value={s.statusId.toString()}
-                  />
-                ))}
-              </Picker>
+              <SelectList
+                setSelected={setEditedStatus}
+                data={statusOptions}
+                save="key"
+                search={false}
+                placeholder="Select status..."
+                defaultOption={editedStatus ? statusOptions.find(s => s.key === editedStatus) : null}
+              />
             </View>
             <View style={styles.modalButtons}>
               <Button title="Cancel" onPress={closeModal} />

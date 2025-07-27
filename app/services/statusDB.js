@@ -6,6 +6,9 @@ const INITIAL_STATUSES = {
     1: { statusId: 1, name: 'draft' },
     2: { statusId: 2, name: 'published' },
     3: { statusId: 3, name: 'archived' },
+    4: { statusId: 4, name: 'new' },
+    5: { statusId: 5, name: 'stored' },
+    6: { statusId: 6, name: 'saved' },
 };
 
 /**
