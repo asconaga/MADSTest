@@ -1,4 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -26,7 +27,7 @@ export default function SurveyListScreen({ navigation }) {
   const [editedCreatedBy, setEditedCreatedBy] = useState('');
   const [editedStatus, setEditedStatus] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
-
+  const router = useRouter();
 
   // Animated value for shake
   const shakeAnim = useRef(new Animated.Value(0)).current;
@@ -212,6 +213,13 @@ export default function SurveyListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        // style={styles.card}
+        onPress={() => router.push('/optionsScreen')}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.cardTitle, styles.addText]}>Options</Text>
+      </TouchableOpacity>
       <FlatList
         data={surveys}
         keyExtractor={item => item.surveyId.toString()}

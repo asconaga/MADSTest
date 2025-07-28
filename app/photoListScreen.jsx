@@ -18,10 +18,17 @@ export default function PhotoListScreen() {
     const [photos, setPhotos] = useState([]);
     const cameraRef = useRef(null);
 
+    // 1️⃣ On mount, once media permission is granted, load existing assets
     useEffect(() => {
-        // Request media permission on mount
-        if (!mediaPermission) {
-            requestMediaPermission();
+        if (mediaPermission && mediaPermission.granted) {
+            (async () => {
+                const { assets } = await MediaLibrary.getAssetsAsync({
+                    first: 50,               // how many to fetch
+                    sortBy: ['creationTime'],
+                    mediaType: ['photo'],
+                });
+                setPhotos(assets);
+            })();
         }
     }, [mediaPermission]);
 
