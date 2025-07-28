@@ -3,20 +3,25 @@
     "name": "MADSTest",
     "slug": "MADSTest",
     "version": "1.0.0",
-    "orientation": "automatic",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "madstest",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.asconaga.MADSTest",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.asconaga.MADSTest"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +42,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3bc40b40-5fe7-4a36-9204-6bc2468669d3"
+      }
+    },
+    "owner": "asconaga"
   }
 }
